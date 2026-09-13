@@ -2,12 +2,15 @@
 
 一个纯本地的 Web 电子书阅读器：打开浏览器就能读自己导入的书，无需注册、无需上传。
 
+**🌐 线上地址：https://derr1ckwy.github.io/Derr1ck-Reader/**
+
 ## 快速开始
 
 ```bash
 npm install
 npm run dev      # 本地开发
 npm run build    # 构建到 dist/
+npm run deploy   # 构建并部署到 GitHub Pages
 ```
 
 ## 项目结构
@@ -33,6 +36,6 @@ React + Vite · epub.js（EPUB 解析）· Dexie.js（IndexedDB）· GitHub Page
 - [x] M1 骨架：项目搭建、路由、主题切换
 - [x] M2 导入与书库
 - [x] M3 阅读器
-- [ ] M4 进度与打磨、上线
+- [x] M4 进度与打磨、上线
 
 详见 [产品设计文档](docs/产品设计文档.md)。
