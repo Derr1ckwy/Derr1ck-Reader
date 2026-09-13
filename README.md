@@ -31,8 +31,8 @@ React + Vite · epub.js（EPUB 解析）· Dexie.js（IndexedDB）· GitHub Page
 ## 里程碑
 
 - [x] M1 骨架：项目搭建、路由、主题切换
-- [ ] M2 导入与书库
-- [ ] M3 阅读器
+- [x] M2 导入与书库
+- [x] M3 阅读器
 - [ ] M4 进度与打磨、上线
 
 详见 [产品设计文档](docs/产品设计文档.md)。
