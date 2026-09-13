@@ -157,3 +157,69 @@ button:disabled { cursor: not-allowed; opacity: .5; }
   font-size: 13px; z-index: 100; opacity: 0; transition: opacity .3s; pointer-events: none;
 }
 .toast.show { opacity: 1; }
+
+/* ============ 阅读页（M3） ============ */
+.reader-page { min-height: 100vh; }
+
+.reader-progress {
+  position: fixed; top: 0; left: 0; height: 3px; background: var(--accent);
+  z-index: 30; transition: width .15s;
+}
+
+.reader-toolbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+  display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  transition: transform .3s;
+}
+.reader-toolbar.hidden-bar { transform: translateY(-100%); }
+.reader-toolbar .back { font-size: 20px; }
+.reader-toolbar .book-name { font-size: 15px; font-weight: 600; flex: 1; }
+.icon-btn {
+  border: none; background: none; font-size: 15px; color: var(--text);
+  padding: 6px 10px; border-radius: 6px;
+}
+.icon-btn:hover { background: var(--border); }
+
+.reader-status {
+  max-width: 700px; margin: 120px auto; text-align: center;
+  color: var(--text-secondary);
+}
+.error-text { color: #c0504d; }
+
+.reader-body {
+  max-width: 700px; margin: 0 auto; padding: 90px 28px 60px;
+}
+.chapter-title { font-size: 1.25em; margin: 1.6em 0 1em; }
+.reader-body p { margin-bottom: 1.2em; text-indent: 2em; }
+.epub-section { margin-bottom: 2em; }
+.epub-section iframe { border: none; }
+.reader-footer { text-align: center; color: var(--text-secondary); font-size: 13px; padding: 40px 0 80px; }
+
+/* 目录抽屉 */
+.drawer-mask { position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 40; }
+.drawer {
+  position: fixed; top: 0; bottom: 0; left: 0; width: 290px; background: var(--surface);
+  z-index: 41; padding: 20px 0; overflow-y: auto; box-shadow: 0 2px 12px rgba(0,0,0,.15);
+}
+.drawer h3 { padding: 0 20px 12px; font-size: 15px; border-bottom: 1px solid var(--border); }
+.toc-item { padding: 11px 20px; font-size: 14px; cursor: pointer; }
+.toc-item:hover { background: var(--bg); }
+.toc-item.current { color: var(--accent); font-weight: 600; border-right: 3px solid var(--accent); }
+
+/* 设置面板 */
+.settings-panel {
+  position: fixed; right: 0; top: 0; bottom: 0; width: 300px; background: var(--surface);
+  z-index: 41; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,.15); overflow-y: auto;
+}
+.settings-panel h3 { font-size: 15px; margin-bottom: 20px; }
+.setting-group { margin-bottom: 22px; }
+.setting-group label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; }
+.theme-dots { display: flex; gap: 14px; }
+.theme-dot {
+  width: 40px; height: 40px; border-radius: 50%; border: 2px solid transparent; cursor: pointer;
+}
+.theme-dot.active { border-color: var(--accent); }
+.theme-dot.light { background: #f5f2ec; }
+.theme-dot.sepia { background: #e8dcc0; }
+.theme-dot.dark { background: #242424; }
