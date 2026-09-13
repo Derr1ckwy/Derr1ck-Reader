@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Derr1ck 阅读器 · Demo</title>
+<style>
+  :root {
+    --bg: #f5f2ec;
+    --surface: #ffffff;
+    --text: #2b2b2b;
+    --text-secondary: #8a8a8a;
+    --accent: #4a6fa5;
+    --border: #e5e0d8;
+    --shadow: 0 2px 12px rgba(0,0,0,.08);
+    --danger: #c0504d;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: background .3s, color .3s;
+  }
+  .hidden { display: none !important; }
+  button { cursor: pointer; font-family: inherit; }
+
+  /* ============ 书库页 ============ */
+  .lib-header {
+    max-width: 960px; margin: 0 auto; padding: 32px 24px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .lib-header h1 { font-size: 24px; font-weight: 600; }
+  .lib-header .sub { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
+  .btn-primary {
+    background: var(--accent); color: #fff; border: none; border-radius: 8px;
+    padding: 10px 20px; font-size: 14px;
+  }
+  .btn-primary:hover { opacity: .9; }
+  .btn-ghost {
+    background: transparent; color: var(--text-secondary); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 16px; font-size: 13px;
+  }
+  .book-grid {
+    max-width: 960px; margin: 16px auto 60px; padding: 0 24px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 24px;
+  }
+  .book-card { cursor: pointer; }
+  .book-cover {
+    aspect-ratio: 3/4; border-radius: 8px; box-shadow: var(--shadow);
+    display: flex; align-items: center; justify-content: center; padding: 16px;
+    color: #fff; font-size: 18px; font-weight: 600; text-align: center; line-height: 1.5;
+    position: relative; overflow: hidden;
+  }
+  .book-cover .del {
+    position: absolute; top: 6px; right: 6px; width: 24px; height: 24px;
+    border-radius: 50%; border: none; background: rgba(0,0,0,.45); color: #fff;
+    font-size: 13px; display: none; align-items: center; justify-content: center;
+  }
+  .book-card:hover .del { display: flex; }
+  .book-info { margin-top: 10px; }
+  .book-title { font-size: 14px; font-weight: 600; }
+  .book-author { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .progress-track { height: 4px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+  .progress-text { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+  .empty-state {
+    max-width: 960px; margin: 80px auto; text-align: center; color: var(--text-secondary);
+  }
+  .empty-state .icon { font-size: 56px; margin-bottom: 16px; }
+
+  /* ============ 阅读页 ============ */
+  .reader { background: var(--bg); min-height: 100vh; }
+  .reader-progress {
+    position: fixed; top: 0; left: 0; height: 3px; background: var(--accent);
+    width: 0; transition: width .15s; z-index: 30;
+  }
+  .reader-toolbar {
+    position: fixed; top: 0; left: 0; right: 0; height: 52px;
+    display: flex; align-items: center; gap: 12px; padding: 0 16px;
+    background: var(--surface); box-shadow: var(--shadow); z-index: 20;
+  }
+  .reader-toolbar .back { border: none; background: none; font-size: 20px; color: var(--text); }
+  .reader-toolbar .book-name { font-size: 15px; font-weight: 600; flex: 1; }
+  .icon-btn {
+    border: none; background: none; font-size: 17px; color: var(--text);
+    padding: 6px 10px; border-radius: 6px;
+  }
+  .icon-btn:hover { background: var(--border); }
+  .reader-body {
+    max-width: 700px; margin: 0 auto; padding: 90px 28px 120px;
+    font-size: 18px; line-height: 1.9;
+  }
+  .reader-body h2.chapter { font-size: 22px; margin: 48px 0 24px; }
+  .reader-body p { margin-bottom: 1.2em; text-indent: 2em; }
+  .reader-footer { text-align: center; color: var(--text-secondary); font-size: 13px; padding: 40px 0; }
+
+  /* 目录抽屉 */
+  .drawer-mask {
+    position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 40;
+  }
+  .drawer {
+    position: fixed; top: 0; bottom: 0; left: 0; width: 290px; background: var(--surface);
+    z-index: 41; padding: 20px 0; overflow-y: auto; box-shadow: var(--shadow);
+  }
+  .drawer h3 { padding: 0 20px 12px; font-size: 15px; border-bottom: 1px solid var(--border); }
+  .toc-item {
+    padding: 11px 20px; font-size: 14px; cursor: pointer; color: var(--text);
+  }
+  .toc-item:hover { background: var(--bg); }
+  .toc-item.current { color: var(--accent); font-weight: 600; border-right: 3px solid var(--accent); }
+
+  /* 设置面板 */
+  .settings-panel {
+    position: fixed; right: 0; top: 0; bottom: 0; width: 300px; background: var(--surface);
+    z-index: 41; padding: 24px; box-shadow: var(--shadow); overflow-y: auto;
+  }
+  .settings-panel h3 { font-size: 15px; margin-bottom: 20px; }
+  .setting-group { margin-bottom: 22px; }
+  .setting-group label { display: block; font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; }
+  .seg { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .seg button {
+    flex: 1; padding: 9px 0; border: none; background: var(--surface); font-size: 13px;
+    color: var(--text);
+  }
+  .seg button + button { border-left: 1px solid var(--border); }
+  .seg button.active { background: var(--accent); color: #fff; }
+  .theme-dots { display: flex; gap: 14px; }
+  .theme-dot {
+    width: 40px; height: 40px; border-radius: 50%; border: 2px solid transparent; cursor: pointer;
+  }
+  .theme-dot.active { border-color: var(--accent); }
+  .theme-dot.light { background: #f5f2ec; }
+  .theme-dot.sepia { background: #e8dcc0; }
+  .theme-dot.dark { background: #242424; }
+
+  /* 阅读页主题 */
+  .reader[data-theme="light"] { --bg: #f5f2ec; --surface: #ffffff; --text: #2b2b2b; --border: #e5e0d8; }
+  .reader[data-theme="sepia"] { --bg: #e8dcc0; --surface: #f2e9d5; --text: #4a3b28; --border: #d4c6a5; }
+  .reader[data-theme="dark"] { --bg: #191919; --surface: #242424; --text: #c9c9c9; --border: #3a3a3a; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,.78); color: #fff; padding: 10px 22px; border-radius: 20px;
+    font-size: 13px; z-index: 100; opacity: 0; transition: opacity .3s; pointer-events: none;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ============ 导入弹窗 ============ */
+  .modal-mask {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 50;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal {
+    width: 440px; max-width: calc(100vw - 40px); background: var(--surface);
+    border-radius: 12px; padding: 28px; box-shadow: var(--shadow);
+  }
+  .modal h3 { font-size: 17px; margin-bottom: 8px; }
+  .modal .tip { font-size: 13px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 20px; }
+  .modal .tip code { background: var(--bg); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+  .modal .actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+  .modal .btn-primary, .modal .btn-ghost { padding: 9px 18px; }
+  .drop-zone {
+    border: 2px dashed var(--border); border-radius: 10px; padding: 36px 20px;
+    text-align: center; color: var(--text-secondary); font-size: 14px; margin-bottom: 16px;
+  }
+  .fake-files { display: flex; gap: 10px; flex-wrap: wrap; }
+  .fake-file {
+    border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 13px;
+    cursor: pointer; background: var(--bg);
+  }
+  .fake-file:hover { border-color: var(--accent); }
+  .loading-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin: 16px 0 8px; }
+  .loading-bar div { height: 100%; background: var(--accent); width: 0; transition: width .2s; }
+  .loading-text { font-size: 12px; color: var(--text-secondary); text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- ================= 书库页 ================= -->
+<div id="library-page">
+  <div class="lib-header">
+    <div>
+      <h1>📚 我的书库</h1>
+      <div class="sub">Derr1ck 阅读器 Demo · 数据均为模拟</div>
+    </div>
+    <button class="btn-primary" onclick="openImport()">＋ 导入书籍</button>
+  </div>
+  <div class="book-grid" id="book-grid"></div>
+  <div class="empty-state hidden" id="empty-state">
+    <div class="icon">📖</div>
+    <p>书库还是空的，点击右上角「导入书籍」开始吧</p>
+  </div>
+</div>
+
+<!-- ================= 阅读页 ================= -->
+<div id="reader-page" class="reader hidden" data-theme="light">
+  <div class="reader-progress" id="reader-progress"></div>
+  <div class="reader-toolbar">
+    <button class="back" onclick="backToLibrary()">←</button>
+    <div class="book-name" id="reader-book-name"></div>
+    <button class="icon-btn" onclick="openToc()" title="目录">☰ 目录</button>
+    <button class="icon-btn" onclick="openSettings()" title="设置">⚙ 设置</button>
+  </div>
+  <div class="reader-body" id="reader-body"></div>
+  <div class="reader-footer">—— 本章完 · 继续向下滚动阅读下一章 ——</div>
+
+  <!-- 目录抽屉 -->
+  <div class="drawer-mask hidden" id="toc-mask" onclick="closeToc()"></div>
+  <div class="drawer hidden" id="toc-drawer">
+    <h3>📑 目录</h3>
+    <div id="toc-list"></div>
+  </div>
+
+  <!-- 设置面板 -->
+  <div class="drawer-mask hidden" id="settings-mask" onclick="closeSettings()"></div>
+  <div class="settings-panel hidden" id="settings-panel">
+    <h3>⚙ 阅读设置</h3>
+    <div class="setting-group">
+      <label>字号</label>
+      <div class="seg" id="font-size-seg">
+        <button data-v="16">小</button>
+        <button data-v="18" class="active">标准</button>
+        <button data-v="21">大</button>
+        <button data-v="24">特大</button>
+      </div>
+    </div>
+    <div class="setting-group">
+      <label>行距</label>
+      <div class="seg" id="line-height-seg">
+        <button data-v="1.6">紧凑</button>
+        <button data-v="1.9" class="active">标准</button>
+        <button data-v="2.3">宽松</button>
+      </div>
+    </div>
+    <div class="setting-group">
+      <label>主题</label>
+      <div class="theme-dots">
+        <div class="theme-dot light active" data-t="light" title="浅色"></div>
+        <div class="theme-dot sepia" data-t="sepia" title="护眼"></div>
+        <div class="theme-dot dark" data-t="dark" title="深色"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= 导入弹窗 ================= -->
+<div class="modal-mask hidden" id="import-modal">
+  <div class="modal">
+    <!-- 步骤1：格式说明 -->
+    <div id="import-step1">
+      <h3>导入书籍</h3>
+      <div class="tip">
+        支持格式：<code>EPUB</code>、<code>TXT</code><br>
+        TXT 文件仅支持 <code>UTF-8</code> 编码，其他编码请先用编辑器转码。<br>
+        书籍仅保存在浏览器本地，不会上传。
+      </div>
+      <div class="drop-zone">📂 将文件拖拽到此处<br><span style="font-size:12px">（Demo 中请点击下方模拟文件）</span></div>
+      <div class="fake-files">
+        <div class="fake-file" onclick="startImport('时间简史.epub', 4.2)">📕 时间简史.epub（4.2 MB）</div>
+        <div class="fake-file" onclick="startImport('明朝那些事儿.txt', 2.8)">📗 明朝那些事儿.txt（2.8 MB）</div>
+        <div class="fake-file" onclick="startImport('牛津英语词典.epub', 68)">📘 牛津英语词典.epub（68 MB）</div>
+      </div>
+      <div class="actions"><button class="btn-ghost" onclick="closeImport()">取消</button></div>
+    </div>
+    <!-- 步骤2：大文件提示 -->
+    <div id="import-step2-large" class="hidden">
+      <h3>⚠️ 文件较大</h3>
+      <div class="tip" id="large-file-tip"></div>
+      <div class="actions">
+        <button class="btn-ghost" onclick="closeImport()">取消</button>
+        <button class="btn-primary" onclick="confirmLargeImport()">继续导入</button>
+      </div>
+    </div>
+    <!-- 步骤3：解析中 -->
+    <div id="import-step3-loading" class="hidden">
+      <h3>正在解析…</h3>
+      <div class="tip" id="loading-tip">正在解析书籍内容，请稍候</div>
+      <div class="loading-bar"><div id="loading-fill"></div></div>
+      <div class="loading-text" id="loading-text">0%</div>
+      <div class="actions"><button class="btn-ghost" id="cancel-loading-btn" onclick="closeImport()">取消</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ==================== 模拟数据 ==================== */
+const CHAPTER_TITLES = ['第一章 意外的消息', '第二章 远方的来信', '第三章 初到贵地', '第四章 深夜长谈', '第五章 惊人之语', '第六章 柳暗花明', '第七章 抉择时刻', '第八章 新的开始'];
+const SENTENCES = [
+  '夜色渐深，窗外的雨声细密而均匀，敲打着玻璃，也敲打着他纷乱的思绪。',
+  '许多年过去了，他仍然记得那个下午，阳光斜照进老屋的厅堂，空气中浮动着细小的尘埃。',
+  '人生大抵如此，你以为走到了绝路，转角处却又透出一点微光来。',
+  '她没有立刻回答，只是静静望着远处起伏的山峦，仿佛在回忆一件很久远的事。',
+  '时代的车轮滚滚向前，每个人都被裹挟其中，谁也说不清楚这究竟是幸运还是不幸。',
+  '桌上的茶早已凉透，他却浑然不觉，仍旧一页一页翻着那本旧笔记。',
+  '孩子们早已睡下，屋里只剩下挂钟滴答作响，一声一声，敲在人心上。',
+  '风从河面上吹来，带着水汽和青草的味道，让人一时忘却了尘世的烦恼。',
+  '他说这话的时候语气平静，仿佛在说一件与己无关的小事。',
+  '世上的事，原没有那么多道理可讲，不过是各自守着各自的日子罢了。',
+  '灯火通明的街市上人来人往，谁也不会注意到角落里那个沉默的身影。',
+  '多年以后回望，才发现当时以为的惊涛骇浪，不过是人生长河里的一朵小浪花。'
+];
+
+const state = {
+  books: [
+    { id: 1, title: '三体', author: '刘慈欣', progress: 35, cover: ['#1a2f4a', '#2e5a8f'], chapters: 8 },
+    { id: 2, title: '活着', author: '余华', progress: 78, cover: ['#5a2e1a', '#8f5a2e'], chapters: 6 },
+    { id: 3, title: '人类简史', author: '尤瓦尔·赫拉利', progress: 0, cover: ['#2e4a1a', '#5a8f2e'], chapters: 8 },
+  ],
+  currentBook: null,
+  nextId: 4,
+  importFile: null,
+  saveTimer: null,
+};
+
+function makeChapterText(seed, paras = 5) {
+  let out = [];
+  for (let p = 0; p < paras; p++) {
+    let para = '';
+    for (let s = 0; s < 6; s++) {
+      para += SENTENCES[(seed * 3 + p * 2 + s) % SENTENCES.length];
+    }
+    out.push(para);
+  }
+  return out;
+}
+
+/* ==================== 书库页 ==================== */
+function renderLibrary() {
+  const grid = document.getElementById('book-grid');
+  grid.innerHTML = '';
+  state.books.forEach(b => {
+    const card = document.createElement('div');
+    card.className = 'book-card';
+    card.innerHTML = `
+      <div class="book-cover" style="background:linear-gradient(135deg, ${b.cover[0]}, ${b.cover[1]})">
+        <button class="del" title="删除" onclick="event.stopPropagation(); deleteBook(${b.id})">✕</button>
+        <span>${b.title}</span>
+      </div>
+      <div class="book-info">
+        <div class="book-title">${b.title}</div>
+        <div class="book-author">${b.author || '佚名'}</div>
+        <div class="progress-track"><div class="progress-fill" style="width:${b.progress}%"></div></div>
+        <div class="progress-text">${b.progress > 0 ? '已读 ' + b.progress + '%' : '未开始'}</div>
+      </div>`;
+    card.onclick = () => openReader(b);
+    grid.appendChild(card);
+  });
+  document.getElementById('empty-state').classList.toggle('hidden', state.books.length > 0);
+}
+
+function deleteBook(id) {
+  if (!confirm('确定删除这本书吗？阅读进度将一并删除，不可恢复。')) return;
+  state.books = state.books.filter(b => b.id !== id);
+  renderLibrary();
+  showToast('已删除');
+}
+
+/* ==================== 导入流程 ==================== */
+function openImport() { show('import-modal'); showOnly('import-step1'); }
+function closeImport() { document.getElementById('import-modal').classList.add('hidden'); }
+
+function startImport(name, sizeMB) {
+  state.importFile = { name, sizeMB };
+  if (sizeMB > 20) {
+    showOnly('import-step2-large');
+    document.getElementById('large-file-tip').innerHTML =
+      `「${name}」大小为 <b>${sizeMB} MB</b>，解析可能需要一些时间。<br>导入过程中可以随时取消，要继续吗？`;
+  } else {
+    runLoading();
+  }
+}
+
+function confirmLargeImport() { runLoading(); }
+
+function runLoading() {
+  showOnly('import-step3-loading');
+  const { name, sizeMB } = state.importFile;
+  document.getElementById('loading-tip').textContent =
+    sizeMB > 20 ? `正在解析「${name}」（大文件，请耐心等待）…` : `正在解析「${name}」…`;
+  const fill = document.getElementById('loading-fill');
+  const text = document.getElementById('loading-text');
+  let p = 0;
+  const speed = sizeMB > 20 ? 1.2 : 4;   // 大文件加载更慢（模拟）
+  const timer = setInterval(() => {
+    p += Math.random() * speed;
+    if (p >= 100) {
+      p = 100; clearInterval(timer);
+      setTimeout(() => { finishImport(); }, 400);
+    }
+    fill.style.width = p + '%';
+    text.textContent = Math.floor(p) + '%';
+  }, 100);
+  document.getElementById('cancel-loading-btn').onclick = () => { clearInterval(timer); closeImport(); };
+}
+
+function finishImport() {
+  const { name } = state.importFile;
+  const isTxt = name.endsWith('.txt');
+  const palette = [['#4a1a2f', '#8f2e5a'], ['#1a4a4a', '#2e8f8f'], ['#4a3a1a', '#8f7a2e']];
+  state.books.push({
+    id: state.nextId++,
+    title: name.replace(/\.(epub|txt)$/i, ''),
+    author: isTxt ? '本地 TXT 文件' : '本地 EPUB 文件',
+    progress: 0,
+    cover: palette[Math.floor(Math.random() * palette.length)],
+    chapters: 8,
+  });
+  closeImport();
+  renderLibrary();
+  showToast(`《${name.replace(/\.(epub|txt)$/i, '')}》导入成功`);
+}
+
+function showOnly(stepId) {
+  ['import-step1', 'import-step2-large', 'import-step3-loading'].forEach(id =>
+    document.getElementById(id).classList.toggle('hidden', id !== stepId));
+}
+function show(id) { document.getElementById(id).classList.remove('hidden'); }
+
+/* ==================== 阅读页 ==================== */
+function openReader(book) {
+  state.currentBook = book;
+  document.getElementById('library-page').classList.add('hidden');
+  document.getElementById('reader-page').classList.remove('hidden');
+  document.getElementById('reader-book-name').textContent = book.title;
+  document.getElementById('reader-progress').style.width = book.progress + '%';
+
+  // 渲染章节内容
+  const body = document.getElementById('reader-body');
+  body.innerHTML = '';
+  book.chapterEls = [];
+  for (let c = 0; c < book.chapters; c++) {
+    const h = document.createElement('h2');
+    h.className = 'chapter';
+    h.id = 'chapter-' + c;
+    h.textContent = CHAPTER_TITLES[c % CHAPTER_TITLES.length];
+    body.appendChild(h);
+    makeChapterText(c).forEach(t => {
+      const p = document.createElement('p');
+      p.textContent = t;
+      body.appendChild(p);
+    });
+    book.chapterEls.push(h);
+  }
+
+  // 渲染目录
+  const toc = document.getElementById('toc-list');
+  toc.innerHTML = '';
+  for (let c = 0; c < book.chapters; c++) {
+    const item = document.createElement('div');
+    item.className = 'toc-item';
+    item.textContent = CHAPTER_TITLES[c % CHAPTER_TITLES.length];
+    item.onclick = () => {
+      document.getElementById('chapter-' + c).scrollIntoView({ behavior: 'smooth' });
+      closeToc();
+    };
+    toc.appendChild(item);
+  }
+
+  // 跳到上次进度
+  window.scrollTo(0, 0);
+  const startChapter = Math.floor(book.progress / 100 * book.chapters);
+  if (startChapter > 0) {
+    setTimeout(() => {
+      document.getElementById('chapter-' + startChapter).scrollIntoView();
+      showToast(`已恢复到上次阅读位置（${book.progress}%）`);
+    }, 100);
+  }
+}
+
+function backToLibrary() {
+  document.getElementById('reader-page').classList.add('hidden');
+  document.getElementById('library-page').classList.remove('hidden');
+  renderLibrary();
+}
+
+/* 滚动：更新进度条 + 高亮目录 + 防抖保存 */
+window.addEventListener('scroll', () => {
+  if (document.getElementById('reader-page').classList.contains('hidden')) return;
+  const book = state.currentBook;
+  if (!book) return;
+  const total = document.documentElement.scrollHeight - window.innerHeight;
+  const pct = Math.min(100, Math.round(window.scrollY / total * 100));
+  document.getElementById('reader-progress').style.width = pct + '%';
+
+  // 当前章节高亮
+  let current = 0;
+  book.chapterEls.forEach((h, i) => { if (h.getBoundingClientRect().top < 120) current = i; });
+  document.querySelectorAll('.toc-item').forEach((el, i) =>
+    el.classList.toggle('current', i === current));
+
+  // 防抖保存
+  clearTimeout(state.saveTimer);
+  state.saveTimer = setTimeout(() => {
+    book.progress = pct;
+    showToast(`阅读位置已保存（${pct}%）`);
+  }, 1200);
+});
+
+/* ==================== 目录 / 设置 ==================== */
+function openToc() { show('toc-mask'); show('toc-drawer'); }
+function closeToc() {
+  document.getElementById('toc-mask').classList.add('hidden');
+  document.getElementById('toc-drawer').classList.add('hidden');
+}
+function openSettings() { show('settings-mask'); show('settings-panel'); }
+function closeSettings() {
+  document.getElementById('settings-mask').classList.add('hidden');
+  document.getElementById('settings-panel').classList.add('hidden');
+}
+
+document.getElementById('font-size-seg').addEventListener('click', e => {
+  if (e.target.tagName !== 'BUTTON') return;
+  segActivate('font-size-seg', e.target);
+  document.getElementById('reader-body').style.fontSize = e.target.dataset.v + 'px';
+});
+document.getElementById('line-height-seg').addEventListener('click', e => {
+  if (e.target.tagName !== 'BUTTON') return;
+  segActivate('line-height-seg', e.target);
+  document.getElementById('reader-body').style.lineHeight = e.target.dataset.v;
+});
+document.querySelector('.theme-dots').addEventListener('click', e => {
+  if (!e.target.classList.contains('theme-dot')) return;
+  document.querySelectorAll('.theme-dot').forEach(d => d.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById('reader-page').dataset.theme = e.target.dataset.t;
+});
+function segActivate(segId, btn) {
+  document.querySelectorAll('#' + segId + ' button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/* ==================== Toast ==================== */
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+renderLibrary();
+</script>
+</body>
+</html>
