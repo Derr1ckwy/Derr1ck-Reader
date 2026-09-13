@@ -79,7 +79,9 @@
     position: fixed; top: 0; left: 0; right: 0; height: 52px;
     display: flex; align-items: center; gap: 12px; padding: 0 16px;
     background: var(--surface); box-shadow: var(--shadow); z-index: 20;
+    transition: transform .3s;
   }
+  .reader-toolbar.hidden-bar { transform: translateY(-100%); }
   .reader-toolbar .back { border: none; background: none; font-size: 20px; color: var(--text); }
   .reader-toolbar .book-name { font-size: 15px; font-weight: 600; flex: 1; }
   .icon-btn {
@@ -477,7 +479,8 @@ function backToLibrary() {
   renderLibrary();
 }
 
-/* 滚动：更新进度条 + 高亮目录 + 防抖保存 */
+/* 滚动：更新进度条 + 高亮目录 + 防抖保存 + 工具栏自动隐藏 */
+let lastScrollY = 0;
 window.addEventListener('scroll', () => {
   if (document.getElementById('reader-page').classList.contains('hidden')) return;
   const book = state.currentBook;
@@ -485,6 +488,15 @@ window.addEventListener('scroll', () => {
   const total = document.documentElement.scrollHeight - window.innerHeight;
   const pct = Math.min(100, Math.round(window.scrollY / total * 100));
   document.getElementById('reader-progress').style.width = pct + '%';
+
+  // 工具栏自动隐藏：向下滚动隐藏，向上滚动显示
+  const toolbar = document.querySelector('.reader-toolbar');
+  if (window.scrollY > lastScrollY + 4 && window.scrollY > 80) {
+    toolbar.classList.add('hidden-bar');
+  } else if (window.scrollY < lastScrollY - 4) {
+    toolbar.classList.remove('hidden-bar');
+  }
+  lastScrollY = window.scrollY;
 
   // 当前章节高亮
   let current = 0;
@@ -498,6 +510,14 @@ window.addEventListener('scroll', () => {
     book.progress = pct;
     showToast(`阅读位置已保存（${pct}%）`);
   }, 1200);
+});
+
+/* 鼠标移到屏幕顶部附近时，显示工具栏 */
+document.addEventListener('mousemove', e => {
+  if (document.getElementById('reader-page').classList.contains('hidden')) return;
+  if (e.clientY < 60) {
+    document.querySelector('.reader-toolbar').classList.remove('hidden-bar');
+  }
 });
 
 /* ==================== 目录 / 设置 ==================== */
