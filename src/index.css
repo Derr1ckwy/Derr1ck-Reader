@@ -223,3 +223,22 @@ button:disabled { cursor: not-allowed; opacity: .5; }
 .theme-dot.light { background: #f5f2ec; }
 .theme-dot.sepia { background: #e8dcc0; }
 .theme-dot.dark { background: #242424; }
+
+/* 预览模式横幅（PWA 外部打开，未入库） */
+.preview-banner {
+  position: fixed; top: 52px; left: 0; right: 0; z-index: 15;
+  background: var(--accent); color: #fff; text-align: center;
+  font-size: 12px; padding: 6px 12px;
+}
+
+/* 外部打开选择弹窗 */
+.external-actions { display: flex; flex-direction: column; gap: 12px; }
+.external-option {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+  border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px;
+  background: var(--bg); text-align: left; color: var(--text); cursor: pointer;
+}
+.external-option:hover:not(:disabled) { border-color: var(--accent); }
+.external-icon { font-size: 22px; }
+.external-title { font-size: 15px; font-weight: 600; }
+.external-desc { font-size: 12px; color: var(--text-secondary); }

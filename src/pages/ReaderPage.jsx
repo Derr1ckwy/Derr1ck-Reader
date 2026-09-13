@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { db } from '../db/db.js'
+import { getPreviewBook } from '../utils/previewStore.js'
 
 const FONT_SIZES = [
   { v: 16, label: '小' },
@@ -22,6 +23,8 @@ const THEMES = [
 export default function ReaderPage({ theme, onThemeChange }) {
   const { id } = useParams()
   const bookId = Number(id)
+  // 预览模式：id 为 "preview"，内容来自系统"打开方式"递进来的文件，不入库
+  const isPreview = id === 'preview'
 
   const [book, setBook] = useState(null)
   const [error, setError] = useState('')
@@ -54,15 +57,25 @@ export default function ReaderPage({ theme, onThemeChange }) {
     let cancelled = false
 
     async function load() {
-      const record = await db.books.get(bookId)
-      if (!record) {
-        if (!cancelled) { setError('未找到这本书，可能已被删除'); setLoading(false) }
-        return
+      let record
+      if (isPreview) {
+        record = getPreviewBook()
+        if (!record) {
+          if (!cancelled) { setError('预览内容已失效，请重新从外部打开文件'); setLoading(false) }
+          return
+        }
+      } else {
+        record = await db.books.get(bookId)
+        if (!record) {
+          if (!cancelled) { setError('未找到这本书，可能已被删除'); setLoading(false) }
+          return
+        }
       }
       if (cancelled) return
       setBook(record)
-      setProgress(record.progress || 0)
-      progressRef.current = record.progress || 0
+      const savedProgress = isPreview ? 0 : (record.progress || 0)
+      setProgress(savedProgress)
+      progressRef.current = savedProgress
 
       try {
         if (record.format === 'txt') {
@@ -76,8 +89,8 @@ export default function ReaderPage({ theme, onThemeChange }) {
       if (cancelled) return
 
       setLoading(false)
-      // 恢复到上次阅读位置
-      const pct = record.progress || 0
+      // 恢复到上次阅读位置（预览模式不恢复）
+      const pct = savedProgress
       if (pct > 0) {
         requestAnimationFrame(() => {
           const total = document.documentElement.scrollHeight - window.innerHeight
@@ -126,13 +139,13 @@ export default function ReaderPage({ theme, onThemeChange }) {
       renditionsRef.current = []
       epubRef.current?.destroy()
       epubRef.current = null
-      // 离开时保存进度
-      if (progressRef.current > 0) {
+      // 离开时保存进度（预览模式不留存）
+      if (!isPreview && progressRef.current > 0) {
         db.books.update(bookId, { progress: progressRef.current }).catch(() => {})
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bookId])
+  }, [bookId, isPreview])
 
   // 设置变化时同步到已渲染的 EPUB 章节
   const fontSizeRef = useRef(fontSize)
@@ -169,15 +182,17 @@ export default function ReaderPage({ theme, onThemeChange }) {
       els.forEach((el, i) => { if (el.getBoundingClientRect().top < 120) cur = i })
       setCurrentChapter(cur)
 
-      // 防抖保存
+      // 防抖保存（预览模式不入库）
       clearTimeout(saveTimer.current)
       saveTimer.current = setTimeout(() => {
-        db.books.update(bookId, { progress: Math.round(pct) }).catch(() => {})
+        if (!isPreview) {
+          db.books.update(bookId, { progress: Math.round(pct) }).catch(() => {})
+        }
       }, 1200)
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
-  }, [loading, bookId])
+  }, [loading, bookId, isPreview])
 
   // 鼠标移到屏幕顶部时显示工具栏
   useEffect(() => {
@@ -204,6 +219,10 @@ export default function ReaderPage({ theme, onThemeChange }) {
         <button className="icon-btn" onClick={() => setShowToc(true)}>☰ 目录</button>
         <button className="icon-btn" onClick={() => setShowSettings(true)}>⚙ 设置</button>
       </div>
+
+      {isPreview && (
+        <div className="preview-banner">👀 预览模式：此文件未加入书库，阅读进度不会保存</div>
+      )}
 
       {loading && <div className="reader-status">正在打开书籍…</div>}
       {error && <div className="reader-status error-text">{error}</div>}

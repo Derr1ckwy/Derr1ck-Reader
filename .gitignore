@@ -16,6 +16,6 @@ desktop.ini
 # 依赖与构建产物（按实际技术栈补充）
 node_modules/
 dist/
-build/
+dev-dist/
 __pycache__/
 *.pyc
