@@ -75,3 +75,85 @@ button:disabled { cursor: not-allowed; opacity: .5; }
 .reader-toolbar .back { font-size: 20px; }
 .reader-toolbar .book-name { font-size: 15px; font-weight: 600; }
 .reader-page .placeholder-box { max-width: 700px; margin: 48px auto; }
+
+/* ============ 书库网格（M2） ============ */
+.hidden { display: none !important; }
+
+.lib-title-row {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+}
+.lib-header .sub { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
+.header-actions { display: flex; gap: 12px; align-items: center; }
+
+.book-grid {
+  margin-top: 28px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 24px;
+}
+.book-card { cursor: pointer; }
+.book-cover {
+  aspect-ratio: 3/4; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,.15);
+  display: flex; align-items: center; justify-content: center; padding: 16px;
+  color: #fff; position: relative; overflow: hidden;
+}
+.cover-title { font-size: 18px; font-weight: 600; text-align: center; line-height: 1.5; }
+.book-cover .del {
+  position: absolute; top: 6px; right: 6px; width: 24px; height: 24px;
+  border-radius: 50%; border: none; background: rgba(0,0,0,.5); color: #fff;
+  font-size: 13px; display: none; align-items: center; justify-content: center; cursor: pointer;
+}
+.book-card:hover .del { display: flex; }
+.book-info { margin-top: 10px; }
+.book-title { font-size: 14px; font-weight: 600; }
+.book-author { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.progress-track { height: 4px; background: var(--border); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 2px; }
+.progress-text { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+
+.empty-state { margin: 80px auto; text-align: center; color: var(--text-secondary); }
+.empty-state .icon { font-size: 56px; margin-bottom: 16px; }
+
+/* ============ 导入弹窗（M2） ============ */
+.modal-mask {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 50;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal {
+  width: 440px; max-width: calc(100vw - 40px); background: var(--surface);
+  border-radius: 12px; padding: 28px; box-shadow: 0 4px 24px rgba(0,0,0,.2);
+}
+.modal h3 { font-size: 17px; margin-bottom: 8px; }
+.modal .tip { font-size: 13px; color: var(--text-secondary); line-height: 1.8; margin-bottom: 20px; }
+.modal .tip code { background: var(--bg); padding: 1px 6px; border-radius: 4px; font-size: 12px; }
+.modal .tip.error-text { color: var(--danger, #c0504d); }
+.modal .actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+.modal .btn-primary, .modal .btn-ghost { padding: 9px 18px; }
+
+.btn-ghost {
+  background: transparent; color: var(--text-secondary); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 16px; font-size: 13px;
+}
+
+.drop-zone {
+  border: 2px dashed var(--border); border-radius: 10px; padding: 36px 20px;
+  text-align: center; color: var(--text-secondary); font-size: 14px; cursor: pointer;
+}
+.drop-zone.drag-over { border-color: var(--accent); color: var(--accent); }
+
+.loading-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin: 16px 0 8px; }
+.loading-bar .indeterminate {
+  height: 100%; width: 40%; background: var(--accent); border-radius: 3px;
+  animation: slide 1.2s ease-in-out infinite;
+}
+@keyframes slide {
+  0% { margin-left: -40%; }
+  100% { margin-left: 100%; }
+}
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,.78); color: #fff; padding: 10px 22px; border-radius: 20px;
+  font-size: 13px; z-index: 100; opacity: 0; transition: opacity .3s; pointer-events: none;
+}
+.toast.show { opacity: 1; }
