@@ -1,0 +1,77 @@
+/* 全局主题变量（阅读页跟随 data-theme，见 docs/产品设计文档.md 4.3） */
+:root,
+.app[data-theme='light'] {
+  --bg: #f5f2ec;
+  --surface: #ffffff;
+  --text: #2b2b2b;
+  --text-secondary: #8a8a8a;
+  --accent: #4a6fa5;
+  --border: #e5e0d8;
+}
+.app[data-theme='sepia'] {
+  --bg: #e8dcc0;
+  --surface: #f2e9d5;
+  --text: #4a3b28;
+  --text-secondary: #96856a;
+  --accent: #7a6435;
+  --border: #d4c6a5;
+}
+.app[data-theme='dark'] {
+  --bg: #191919;
+  --surface: #242424;
+  --text: #c9c9c9;
+  --text-secondary: #777;
+  --accent: #7a9fd0;
+  --border: #3a3a3a;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  transition: background .3s, color .3s;
+}
+
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; font-family: inherit; }
+button:disabled { cursor: not-allowed; opacity: .5; }
+
+/* 书库页 */
+.lib-header {
+  max-width: 960px; margin: 0 auto; padding: 32px 24px;
+}
+.lib-header h1 { font-size: 24px; font-weight: 600; }
+.lib-header .sub { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
+.header-actions { display: flex; gap: 12px; margin-top: 16px; align-items: center; }
+
+.btn-primary {
+  background: var(--accent); color: #fff; border: none; border-radius: 8px;
+  padding: 10px 20px; font-size: 14px;
+}
+.btn-primary:hover:not(:disabled) { opacity: .9; }
+
+.seg { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.seg button {
+  flex: 1; padding: 9px 14px; border: none; background: var(--surface);
+  font-size: 13px; color: var(--text);
+}
+.seg button + button { border-left: 1px solid var(--border); }
+.seg button.active { background: var(--accent); color: #fff; }
+
+.placeholder-box {
+  margin-top: 48px; padding: 40px; border: 2px dashed var(--border);
+  border-radius: 12px; text-align: center; color: var(--text-secondary);
+  line-height: 2;
+}
+.placeholder-box code { background: var(--surface); padding: 2px 8px; border-radius: 4px; }
+
+/* 阅读页 */
+.reader-toolbar {
+  display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+  background: var(--surface); border-bottom: 1px solid var(--border);
+}
+.reader-toolbar .back { font-size: 20px; }
+.reader-toolbar .book-name { font-size: 15px; font-weight: 600; }
+.reader-page .placeholder-box { max-width: 700px; margin: 48px auto; }

@@ -9,22 +9,33 @@
 
 ## 技术栈
 
-待定。确定后请在此补充：
-
-- 语言 / 框架：
-- 包管理器：
-- 构建 / 运行方式：
+- **语言 / 框架**：JavaScript + React 19 + Vite
+- **路由**：react-router-dom
+- **EPUB 解析**：epubjs
+- **本地存储**：Dexie.js（IndexedDB），无后端
+- **包管理器**：npm
+- **构建 / 运行**：`npm run dev`（开发）、`npm run build`（构建）、GitHub Pages 部署
 
 ## 目录结构
 
 ```
 Derr1ck阅读器/
-├── AGENTS.md      # 本文件：项目说明书与 AI 助手指南
-├── .gitignore
-└── ...            # 项目代码（待添加）
+├── AGENTS.md             # 本文件：项目说明书与 AI 助手指南
+├── README.md
+├── docs/
+│   └── 产品设计文档.md    # MVP 产品设计文档（功能边界的唯一依据）
+├── demo/
+│   └── index.html        # 界面流程 Demo（单文件，设计验证用）
+├── src/
+│   ├── pages/            # 页面组件（LibraryPage 书库 / ReaderPage 阅读）
+│   ├── App.jsx           # 路由与全局主题
+│   └── main.jsx
+├── index.html
+├── package.json
+└── .gitignore
 ```
 
-项目演进后请及时更新本节的目录说明。
+里程碑进度与待实现功能以 `docs/产品设计文档.md` 为准；第六章"可推迟功能列表"中的功能未经确认不要提前实现。
 
 ## 开发约定
 
